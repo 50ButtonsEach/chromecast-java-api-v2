@@ -34,6 +34,7 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
                @JsonSubTypes.Type(name = "LOAD", value = StandardRequest.Load.class),
                @JsonSubTypes.Type(name = "PLAY", value = StandardRequest.Play.class),
                @JsonSubTypes.Type(name = "PAUSE", value = StandardRequest.Pause.class),
+               @JsonSubTypes.Type(name = "QUEUE_UPDATE", value = StandardRequest.QueueUpdate.class),
                @JsonSubTypes.Type(name = "SET_VOLUME", value = StandardRequest.SetVolume.class),
                @JsonSubTypes.Type(name = "SEEK", value = StandardRequest.Seek.class)})
 abstract class StandardMessage implements Message {

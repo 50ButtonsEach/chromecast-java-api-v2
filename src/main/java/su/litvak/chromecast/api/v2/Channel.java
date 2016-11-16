@@ -15,10 +15,8 @@
  */
 package su.litvak.chromecast.api.v2;
 
-import static su.litvak.chromecast.api.v2.Util.fromArray;
-import static su.litvak.chromecast.api.v2.Util.toArray;
-
 import com.google.protobuf.InvalidProtocolBufferException;
+
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.annotate.JsonSubTypes;
@@ -26,18 +24,26 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
-import java.net.Socket;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+
+import static su.litvak.chromecast.api.v2.Util.fromArray;
+import static su.litvak.chromecast.api.v2.Util.toArray;
 
 /**
  * Internal class for low-level communication with ChromeCast device.
@@ -450,6 +456,12 @@ class Channel implements Closeable {
     public MediaStatus pause(String destinationId, String sessionId, long mediaSessionId) throws IOException {
         startSession(destinationId);
         StandardResponse.MediaStatus status = sendStandard("urn:x-cast:com.google.cast.media", StandardRequest.pause(sessionId, mediaSessionId), destinationId);
+        return status == null || status.statuses.length == 0 ? null : status.statuses[0];
+    }
+
+    public MediaStatus queueUpdate(String destinationId, String sessionId, long mediaSessionId, long jump) throws IOException {
+        startSession(destinationId);
+        StandardResponse.MediaStatus status = sendStandard("urn:x-cast:com.google.cast.media", StandardRequest.queueUpdate(sessionId, mediaSessionId, jump), destinationId);
         return status == null || status.statuses.length == 0 ? null : status.statuses[0];
     }
 

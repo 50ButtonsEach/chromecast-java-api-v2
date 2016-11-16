@@ -236,6 +236,32 @@ public class ChromeCast {
         channel.pause(runningApp.transportId, runningApp.sessionId, mediaStatus.mediaSessionId);
     }
 
+    public void queueUpdate(long jump) throws IOException {
+        Status status = getStatus();
+        Application runningApp = status.getRunningApp();
+        if (runningApp == null) {
+            throw new ChromeCastException("No application is running in ChromeCast");
+        }
+        MediaStatus mediaStatus = channel.getMediaStatus(runningApp.transportId);
+        if (mediaStatus == null) {
+            throw new ChromeCastException("ChromeCast has invalid state to next media playback");
+        }
+        channel.queueUpdate(runningApp.transportId, runningApp.sessionId, mediaStatus.mediaSessionId, jump);
+    }
+
+    public void previous() throws IOException {
+        Status status = getStatus();
+        Application runningApp = status.getRunningApp();
+        if (runningApp == null) {
+            throw new ChromeCastException("No application is running in ChromeCast");
+        }
+        MediaStatus mediaStatus = channel.getMediaStatus(runningApp.transportId);
+        if (mediaStatus == null) {
+            throw new ChromeCastException("ChromeCast has invalid state to next media playback");
+        }
+        channel.play(runningApp.transportId, runningApp.sessionId, mediaStatus.mediaSessionId);
+    }
+
     /**
      * <p>Moves current playback time point to specified value</p>
      *

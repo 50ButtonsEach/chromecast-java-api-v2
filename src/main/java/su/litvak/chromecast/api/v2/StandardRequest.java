@@ -113,6 +113,16 @@ abstract class StandardRequest extends StandardMessage implements Request {
         }
     }
 
+    static class QueueUpdate extends MediaRequest {
+        @JsonProperty
+        final long jump;
+
+        QueueUpdate(long mediaSessionId, String sessionId, long jump) {
+            super(mediaSessionId, sessionId);
+            this.jump = jump;
+        }
+    }
+
     static class Seek extends MediaRequest {
         @JsonProperty
         final double currentTime;
@@ -158,6 +168,10 @@ abstract class StandardRequest extends StandardMessage implements Request {
 
     static Pause pause(String sessionId, long mediaSessionId) {
         return new Pause(mediaSessionId, sessionId);
+    }
+
+    static QueueUpdate queueUpdate(String sessionId, long mediaSessionId, long jump) {
+        return new QueueUpdate(mediaSessionId, sessionId, jump);
     }
 
     static Seek seek(String sessionId, long mediaSessionId, double currentTime) {
