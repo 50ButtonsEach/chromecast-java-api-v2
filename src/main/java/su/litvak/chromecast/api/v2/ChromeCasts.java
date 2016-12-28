@@ -114,7 +114,11 @@ public class ChromeCasts extends ArrayList<ChromeCast> {
     }
 
     private void _stopDiscovery() throws IOException {
-        nsdManager.stopServiceDiscovery(discoveryListener);
+        try {
+            nsdManager.stopServiceDiscovery(discoveryListener);
+        } catch (Exception e) {
+
+        }
     }
 
     /**
