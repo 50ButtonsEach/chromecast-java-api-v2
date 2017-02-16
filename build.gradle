@@ -22,7 +22,6 @@ repositories {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile group: 'com.google.protobuf', name: 'protobuf-java', version: '2.6.0'
     compile group: 'org.codehaus.jackson', name: 'jackson-mapper-asl', version: '1.9.13'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
 }
