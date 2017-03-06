@@ -15,7 +15,7 @@
  */
 package su.litvak.chromecast.api.v2;
 
-import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf2_6.InvalidProtocolBufferException;
 
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonProcessingException;
