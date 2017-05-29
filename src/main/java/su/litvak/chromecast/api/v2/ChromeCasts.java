@@ -15,111 +15,88 @@
  */
 package su.litvak.chromecast.api.v2;
 
-import android.content.Context;
-import android.net.nsd.NsdManager;
-import android.net.nsd.NsdServiceInfo;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceEvent;
+import javax.jmdns.ServiceListener;
+
 /**
  * Utility class that discovers ChromeCast devices and holds references to all of them.
  */
-public class ChromeCasts extends ArrayList<ChromeCast> {
+public class ChromeCasts extends ArrayList<ChromeCast> implements ServiceListener {
 
-    private static ChromeCasts INSTANCE = null;
+    private static ChromeCasts INSTANCE = new ChromeCasts();
 
     public static void setInstance(ChromeCasts instance) {
         INSTANCE = instance;
     }
 
+    private JmDNS mDNS;
     private List<ChromeCastsListener> listeners = new ArrayList<ChromeCastsListener>();
-    private Context context;
-    private NsdManager nsdManager;
-    private NsdManager.DiscoveryListener discoveryListener;
 
-    public ChromeCasts(Context context) {
-        this.context = context;
+    private ChromeCasts() {
+
     }
 
     private void _startDiscovery(InetAddress addr) throws IOException {
-        nsdManager = (NsdManager) this.context.getSystemService(Context.NSD_SERVICE);
-        discoveryListener = new NsdManager.DiscoveryListener() {
-
-            @Override
-            public void onDiscoveryStarted(String regType) {
-
+        if (mDNS == null) {
+            if(addr != null) {
+                mDNS = JmDNS.create(addr);
+            } else {
+                mDNS = JmDNS.create();
             }
-
-            @Override
-            public void onServiceFound(final NsdServiceInfo service) {
-                nsdManager.resolveService(service, new NsdManager.ResolveListener() {
-                    @Override
-                    public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
-
-                    }
-
-                    @Override
-                    public void onServiceResolved(NsdServiceInfo serviceInfo) {
-                        ChromeCast device = new ChromeCast(serviceInfo, serviceInfo.getServiceName());
-                        add(device);
-                        for (ChromeCastsListener listener : listeners) {
-                            listener.newChromeCastDiscovered(device);
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onServiceLost(NsdServiceInfo service) {
-                if (ChromeCast.SERVICE_TYPE.equals(service.getServiceName())) {
-                    // We have a ChromeCast device unregistering
-                    List<ChromeCast> copy = new ArrayList<ChromeCast>(ChromeCasts.this);
-                    ChromeCast deviceRemoved = null;
-                    // Probably better keep a map to better lookup devices
-                    for (ChromeCast device : copy) {
-                        if (device.getName().equals(service.getServiceName())) {
-                            deviceRemoved = device;
-                            ChromeCasts.this.remove(device);
-                            break;
-                        }
-                    }
-                    if (deviceRemoved != null) {
-                        for (ChromeCastsListener listener : listeners) {
-                            listener.chromeCastRemoved(deviceRemoved);
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onDiscoveryStopped(String serviceType) {
-
-            }
-
-            @Override
-            public void onStartDiscoveryFailed(String serviceType, int errorCode) {
-
-            }
-
-            @Override
-            public void onStopDiscoveryFailed(String serviceType, int errorCode) {
-
-            }
-        };
-
-        nsdManager.discoverServices("_googlecast._tcp.", NsdManager.PROTOCOL_DNS_SD, discoveryListener);
+            mDNS.addServiceListener(ChromeCast.SERVICE_TYPE, this);
+        }
     }
 
     private void _stopDiscovery() throws IOException {
-        try {
-            nsdManager.stopServiceDiscovery(discoveryListener);
-        } catch (Exception e) {
-
+        if (mDNS != null) {
+            mDNS.close();
+            mDNS = null;
         }
     }
+
+    @Override
+    public void serviceAdded(ServiceEvent event) {
+        if (event.getInfo() != null) {
+            ChromeCast device = new ChromeCast(mDNS, event.getInfo().getName());
+            add(device);
+            for (ChromeCastsListener listener : listeners) {
+                listener.newChromeCastDiscovered(device);
+            }
+        }
+    }
+
+    @Override
+    public void serviceRemoved(ServiceEvent event) {
+        if (ChromeCast.SERVICE_TYPE.equals(event.getType())) {
+            // We have a ChromeCast device unregistering
+            List<ChromeCast> copy = new ArrayList<ChromeCast>(this);
+            ChromeCast deviceRemoved = null;
+            // Probably better keep a map to better lookup devices
+            for (ChromeCast device : copy) {
+                if (device.getName().equals(event.getInfo().getName())) {
+                    deviceRemoved = device;
+                    this.remove(device);
+                    break;
+                }
+            }
+            if (deviceRemoved != null) {
+                for (ChromeCastsListener listener : listeners) {
+                    listener.chromeCastRemoved(deviceRemoved);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void serviceResolved(ServiceEvent event) {
+    }
+
 
     /**
      * Starts ChromeCast device discovery

@@ -15,12 +15,13 @@
  */
 package su.litvak.chromecast.api.v2;
 
-import android.net.nsd.NsdServiceInfo;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceInfo;
 
 /**
  * ChromeCast device - main object used for interaction with ChromeCast dongle.
@@ -37,12 +38,14 @@ public class ChromeCast {
     private String application;
     private Channel channel;
 
-    public ChromeCast(NsdServiceInfo serviceInfo, String name) {
+    public ChromeCast(JmDNS mDNS, String name) {
         this.name = name;
-        this.address = serviceInfo.getHost().getHostAddress();
+        ServiceInfo serviceInfo = mDNS.getServiceInfo(SERVICE_TYPE, name);
+        this.address = serviceInfo.getInet4Addresses()[0].getHostAddress();
+
         this.port = serviceInfo.getPort();
-        //this.appsURL = serviceInfo.().length == 0 ? null : serviceInfo.getURLs()[0];
-        this.application = serviceInfo.getServiceType();
+        this.appsURL = serviceInfo.getURLs().length == 0 ? null : serviceInfo.getURLs()[0];
+        this.application = serviceInfo.getApplication();
     }
 
     public ChromeCast(String address) {
