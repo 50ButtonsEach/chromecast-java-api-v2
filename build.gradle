@@ -25,8 +25,8 @@ targetCompatibility = 1.7
 
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile group: 'org.codehaus.jackson', name: 'jackson-mapper-asl', version: '1.9.13'
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
-    compile 'org.jmdns:jmdns:3.5.1'
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation group: 'org.codehaus.jackson', name: 'jackson-mapper-asl', version: '1.9.13'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
+    implementation 'org.jmdns:jmdns:3.5.1'
 }
